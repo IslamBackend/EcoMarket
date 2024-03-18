@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # Local apps
+    'apps.products'
 ]
 
 MIDDLEWARE = [
