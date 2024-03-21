@@ -17,4 +17,13 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', verbose_name='Category')
     title = models.CharField(max_length=125, verbose_name='Product Title')
     image = models.ImageField(upload_to='product', verbose_name='Image')
-    price = models.PositiveIntegerField(default=1, verbose_name='Price')
+    price = models.PositiveIntegerField(default=0, verbose_name='Price')
+    amount = models.PositiveIntegerField(default=0, verbose_name='Amount')
+    description = models.TextField(max_length=255, verbose_name='Description')
+
+    class Meta:
+        verbose_name = 'Product'
+        verbose_name_plural = 'Products'
+
+    def __str__(self):
+        return self.title
