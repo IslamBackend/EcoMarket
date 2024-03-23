@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # Local apps
-    'apps.products'
+    'apps.products',
+    'apps.users',
 ]
 
 MIDDLEWARE = [
@@ -94,3 +95,5 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'back_media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.CustomUser'
