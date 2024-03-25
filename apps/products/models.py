@@ -1,5 +1,7 @@
 from django.db import models
 
+from apps.users.models import CustomUser
+
 
 class Category(models.Model):
     title = models.CharField(max_length=125, unique=True, verbose_name='Category Title')
@@ -27,3 +29,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class OrderCard(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order')
+    address = models.CharField(max_length=125, verbose_name='Address')
+    phone_number = models.CharField(max_length=15, verbose_name='Phone Number')
+    landmark = models.CharField(max_length=125, verbose_name='Landmark')
+    comment = models.CharField(max_length=125, verbose_name='Comment')
