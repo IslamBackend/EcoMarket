@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.products.models import Category, Product
+from apps.products.models import Category, Product, OrderCard, Cart, CartItem
 
 
 class ImageURLMixin:
@@ -45,3 +45,30 @@ class ProductDetailSerializer(serializers.ModelSerializer, ImageURLMixin):
 
     def get_image(self, obj):
         return self.get_image_url(obj)
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ('id', 'cart', 'product', 'quantity')
+
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = ('user', 'items', 'total_price')
+
+    def get_total_price(self, obj):
+        total_price = 0
+        for item in obj.items.all():
+            total_price += item.product.price * item.quantity
+        return total_price
+
+
+class OrderCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderCard
+        fields = ('user', 'phone_number', 'address', 'landmark', 'comment')
