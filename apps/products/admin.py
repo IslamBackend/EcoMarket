@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.products.models import Product, Category, OrderCard, CartItem, Cart
+from apps.products.models import Product, Category, OrderCard, CartItem, Cart, OrderedProduct
 
 
 @admin.register(Category)
@@ -15,15 +15,9 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 
-@admin.register(OrderCard)
-class OrderCardAdmin(admin.ModelAdmin):
-    list_display = ('address', 'phone_number')
-    search_fields = ('phone_number',)
-
-
 @admin.register(Cart)
 class CardAdmin(admin.ModelAdmin):
-    list_display = ('user', 'unique_id')
+    list_display = ('user', 'created_at')
     search_fields = ('user',)
 
 
@@ -31,3 +25,14 @@ class CardAdmin(admin.ModelAdmin):
 class CardAdmin(admin.ModelAdmin):
     list_display = ('cart', 'product')
     search_fields = ('cart',)
+
+
+class OrderedProductInline(admin.TabularInline):
+    model = OrderedProduct
+    extra = 0
+
+
+@admin.register(OrderCard)
+class OrderCardAdmin(admin.ModelAdmin):
+    list_display = ('order_number', 'user', 'total_price', 'created_at')
+    inlines = [OrderedProductInline]

@@ -34,7 +34,6 @@ class Product(models.Model):
 
 
 class Cart(models.Model):
-    unique_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,12 +45,30 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=0)
+    quantity = models.PositiveIntegerField(default=1)
 
 
 class OrderCard(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='order')
-    address = models.CharField(max_length=125, verbose_name='Address')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    address = models.CharField(max_length=255, verbose_name='Address')
     phone_number = models.CharField(max_length=15, verbose_name='Phone Number')
-    landmark = models.CharField(max_length=125, verbose_name='Landmark')
-    comment = models.CharField(max_length=125, verbose_name='Comment')
+    landmark = models.CharField(max_length=255, verbose_name='Landmark')
+    comment = models.TextField(blank=True, verbose_name='Comment')
+    total_price = models.PositiveIntegerField(default=0, verbose_name='Total Price')
+    order_number = models.CharField(max_length=8, unique=True, verbose_name='Order Number')
+    created_at = models.DateTimeField(auto_now_add=True)
+    cart_items = models.ManyToManyField(CartItem, related_name='orders')
+
+    def save(self):
+        if not self.order_number:
+            self.order_number = self.generate_uuid()
+        super().save()
+
+    def generate_uuid(self):
+        return str(uuid.uuid4())[:8]
+
+
+class OrderedProduct(models.Model):
+    order = models.ForeignKey(OrderCard, related_name='ordered_product', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)

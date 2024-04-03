@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.products.models import Category, Product, OrderCard, Cart, CartItem
+from apps.products.models import Category, Product, OrderCard, Cart, CartItem, OrderedProduct
 
 
 class ImageURLMixin:
@@ -71,4 +71,38 @@ class CartSerializer(serializers.ModelSerializer):
 class OrderCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderCard
-        fields = ('user', 'phone_number', 'address', 'landmark', 'comment')
+        fields = ('address', 'phone_number', 'landmark', 'comment')
+        read_only_fields = ('user', 'total_price', 'order_number', 'created_at', 'cart_items')
+
+
+class HistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderCard
+        fields = ('order_number', 'total_price')
+
+
+class OrderedProductSerializer(serializers.ModelSerializer, ImageURLMixin):
+    product_title = serializers.CharField(source='product.title', read_only=True)
+    product_price = serializers.IntegerField(source='product.price', read_only=True)
+    product_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderedProduct
+        fields = ('product_title', 'product_image', 'product_price', 'quantity')
+
+    def get_product_image(self, obj):
+        return self.get_image_url(obj.product)
+
+
+class HistoryDetailSerializer(serializers.ModelSerializer):
+    cart_items = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderCard
+        fields = ('order_number', 'created_at', 'total_price', 'cart_items')
+
+    def get_cart_items(self, obj):
+        ordered_products = obj.ordered_product.all()
+        context = {'request': self.context.get('request')}
+        serialized_products = OrderedProductSerializer(ordered_products, many=True, context=context)
+        return serialized_products.data
