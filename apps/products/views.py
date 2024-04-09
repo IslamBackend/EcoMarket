@@ -1,5 +1,6 @@
-from rest_framework import status
+from rest_framework import status, filters
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,10 +18,25 @@ class CategoryListAPIView(APIView):
 
 
 class ProductListAPIView(APIView):
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+
     def get(self, request):
-        queryset = Product.objects.all()
-        serializer = ProductSerializer(queryset, context={'request': request}, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        queryset = Product.objects.all().order_by('-id')
+
+        search = request.GET.get('search', None)
+        if search is not None:
+            queryset = queryset.filter(title__contains=search)
+
+        min_price = request.GET.get('min_price', None)
+        if min_price is not None:
+            queryset = queryset.filter(price__gte=min_price)
+
+        paginator = self.pagination_class()
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = ProductSerializer(result_page, context={'request': request}, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
 
 class ProductDetailAPIView(APIView):
