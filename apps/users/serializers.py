@@ -22,3 +22,8 @@ class VerifySerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(style={'input_type': 'password'}, min_length=8)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(style={'input_type': 'password'}, min_length=8, required=True)
+    new_password = serializers.CharField(style={'input_type': 'password'}, min_length=8, required=True)
