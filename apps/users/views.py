@@ -1,12 +1,13 @@
-from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import CustomUser
-from .serializers import RegisterSerializer, LoginSerializer
+from apps.users.models import CustomUser
+from apps.users.serializers import RegisterSerializer, LoginSerializer, VerifySerializer
+
+from apps.users.email import send_confirmation_email
 
 
 class RegisterAPIView(APIView):
@@ -15,17 +16,47 @@ class RegisterAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = CustomUser.objects.create_user(**serializer.validated_data)
-        refresh = RefreshToken.for_user(user)
+        send_confirmation_email(user)
+        return Response({
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
 
-        return Response({'refresh': str(refresh), 'access': str(refresh.access_token), 'data': serializer.data},
-                        status=status.HTTP_201_CREATED)
+
+class VerifyOtpAPIview(APIView):
+    def post(self, request):
+        serializer = VerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data.get('email')
+        otp = serializer.validated_data.get('otp')
+
+        user = CustomUser.objects.filter(email=email).first()
+        if not user:
+            return Response({
+                'error': 'User does not exist.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if user.otp != otp:
+            return Response({
+                'error': 'Invalid OTP.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_active = True
+        user.otp = None
+        user.save()
+
+        return Response({
+            'message': 'Account successfully verified.'
+        }, status=status.HTTP_200_OK)
 
 
 class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         user = authenticate(**serializer.validated_data)
+
         if user:
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -33,6 +64,7 @@ class LoginAPIView(APIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token)
             }, status=status.HTTP_200_OK)
+
         return Response({
             'message': 'Invalid credentials'
         }, status=status.HTTP_400_BAD_REQUEST)

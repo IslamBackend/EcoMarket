@@ -7,8 +7,9 @@ from apps.users.managers import CustomUserManager
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, verbose_name='username')
     password = models.CharField(max_length=150, verbose_name='password')
-    email = models.EmailField(max_length=100, unique=True)
-    is_active = models.BooleanField(default=True)
+    email = models.EmailField(max_length=100, unique=True, verbose_name='email')
+    otp = models.CharField(max_length=4, blank=True, null=True, verbose_name='otp')
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -23,4 +24,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
