@@ -1,4 +1,5 @@
 import random
+import string
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -23,3 +24,17 @@ def send_confirmation_email(user):
 
     user.otp = code
     user.save()
+
+
+def send_password_reset_email(email, reset_password):
+    subject = _("Password Reset")
+    message = _(
+        f"Password reset code: {reset_password}. The code is valid for 5 minutes."
+    )
+    email_from = settings.EMAIL_HOST_USER
+    send_mail(subject, message, email_from, [email])
+
+
+def generate_random_code(length=4):
+    characters = string.digits
+    return "".join(random.choice(characters) for _ in range(length))

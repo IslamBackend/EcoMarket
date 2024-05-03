@@ -27,3 +27,16 @@ class LoginSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(style={'input_type': 'password'}, min_length=8, required=True)
     new_password = serializers.CharField(style={'input_type': 'password'}, min_length=8, required=True)
+
+
+class PasswordResetSearchUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()
+
+
+class PasswordResetNewPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(style={'input_type': 'password'}, min_length=8)
+
