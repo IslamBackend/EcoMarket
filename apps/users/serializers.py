@@ -14,6 +14,10 @@ class RegisterSerializer(serializers.Serializer):
         return email
 
 
+class ResendConfirmationEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
 class VerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField()
@@ -39,4 +43,3 @@ class PasswordResetCodeSerializer(serializers.Serializer):
 
 class PasswordResetNewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(style={'input_type': 'password'}, min_length=8)
-

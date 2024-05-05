@@ -9,7 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.email import send_confirmation_email, send_password_reset_email, generate_random_code
 from apps.users.models import CustomUser, PasswordResetToken
 from apps.users.serializers import RegisterSerializer, LoginSerializer, VerifySerializer, ChangePasswordSerializer, \
-    PasswordResetSearchUserSerializer, PasswordResetCodeSerializer, PasswordResetNewPasswordSerializer
+    PasswordResetSearchUserSerializer, PasswordResetCodeSerializer, PasswordResetNewPasswordSerializer, \
+    ResendConfirmationEmailSerializer
 
 
 class RegisterAPIView(APIView):
@@ -23,6 +24,34 @@ class RegisterAPIView(APIView):
         return Response(
             {'data': serializer.data},
             status=status.HTTP_201_CREATED
+        )
+
+
+class ResendConfirmationEmailAPIView(APIView):
+    def post(self, request):
+        serializer = ResendConfirmationEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data.get('email')
+        user = CustomUser.objects.filter(email=email).first()
+
+        if not user:
+            return Response(
+                {'error': 'User with provided email does not exist'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if user.is_active:
+            return Response(
+                {'message': 'User is already active'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        send_confirmation_email(user)
+
+        return Response(
+            {'message': 'Confirmation email sent successfully'},
+            status=status.HTTP_200_OK,
         )
 
 
