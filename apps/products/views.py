@@ -22,7 +22,7 @@ class ProductListAPIView(APIView):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 
     def get(self, request):
-        queryset = Product.objects.all().order_by('-id')
+        queryset = Product.objects.select_related('category').order_by('-id')
 
         search = request.GET.get('search', None)
         if search is not None:
